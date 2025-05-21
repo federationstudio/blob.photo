@@ -1,4 +1,4 @@
-# Blog Photo
+# Blob Photo
 Blob.photo is a minimal Bluesky image proxy that redirects avatar, banner, and post media requests to Bluesky’s CDN.
 Built with Cloudflare Workers, it is designed to be fast and efficient.
 
@@ -7,7 +7,7 @@ Created by [@federation.studio](https://bsky.app/profile/federation.studio) for 
 ## Table of Contents
 
 <!-- TOC -->
-* [Blog Photo](#blog-photo)
+* [Blob Photo](#blob-photo)
   * [Table of Contents](#table-of-contents)
 * [Usage](#usage)
   * [Variables](#variables)
