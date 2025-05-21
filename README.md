@@ -1,8 +1,8 @@
 # Blog Photo
 Blob.photo is a minimal Bluesky image proxy that redirects avatar, banner, and post media requests to Bluesky’s CDN.
-Build on Cloudflare Workers, it is designed to be fast and efficient.
+Built with Cloudflare Workers, it is designed to be fast and efficient.
 
-Created by [@federation.studio](https://bsky.app/profile/federation.studio).
+Created by [@federation.studio](https://bsky.app/profile/federation.studio) for use in future projects.
 
 ## Table of Contents
 
@@ -10,10 +10,12 @@ Created by [@federation.studio](https://bsky.app/profile/federation.studio).
 * [Blog Photo](#blog-photo)
   * [Table of Contents](#table-of-contents)
 * [Usage](#usage)
+  * [Variables](#variables)
   * [Avatar](#avatar)
   * [Banners](#banners)
   * [Post Media](#post-media)
   * [Formats](#formats)
+* [Examples](#examples)
 <!-- TOC -->
 
 # Usage
@@ -90,9 +92,3 @@ https://blob.photo/{actor}/post/{post_id}/{blob_index?}@webp
 
 [<img src="https://blob.photo/bsky.app/banner" height="96">](https://blob.photo/bsky.app/banner)
 [<img src="https://blob.photo/federation.studio/banner" height="96">](https://blob.photo/federation.studio/banner)
-
----
-
-<center>
-    Created by <a href="https://bsky.app/profile/federation.studio">@federation.studio</a>
-</center>
