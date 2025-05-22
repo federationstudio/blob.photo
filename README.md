@@ -14,6 +14,7 @@ Created by [@federation.studio](https://bsky.app/profile/federation.studio) for 
   * [Avatar](#avatar)
   * [Banners](#banners)
   * [Post Media](#post-media)
+  * [Blobs](#blobs)
   * [Formats](#formats)
 * [Examples](#examples)
 <!-- TOC -->
@@ -23,6 +24,7 @@ There are three types of images that can be proxied:
 1. **Avatar**: The profile picture of a user.
 2. **Banners**: The header image of a user profile.
 3. **Post Media**: Images attached to a post.
+4. **Blobs**: Individual blobs uploaded to PDS.
 
 > [!IMPORTANT]
 > This currently only works for images on the AT Protocol. Videos and other media types are not supported.
@@ -33,6 +35,8 @@ Here is a quick reference for the variables used in the URLs:
 - `{actor}`: The handle or DID of the user.
 - `{post_id}`: The ID of the post.
 - `{blob_index?}`: The index of the blob in the post media array (optional).
+- `{cid}`: The CID of the blob.
+- `@{format}`: The desired image format (optional).
 
 ## Avatar
 To get the avatar of a user, use the URL format below. This will return the profile picture of the user.
@@ -42,9 +46,11 @@ https://blob.photo/{actor}
 
 Example:
 https://blob.photo/bsky.app
+https://blob.photo/did:plc:ql2klqjmqhb52lae3jvsk5x4
 ```
 
 [<img src="https://blob.photo/bsky.app" width="96">](https://blob.photo/bsky.app)
+[<img src="https://blob.photo/did:plc:ql2klqjmqhb52lae3jvsk5x4" width="96">](https://blob.photo/did:plc:ql2klqjmqhb52lae3jvsk5x4)
 
 ## Banners
 To get the banner of a user, use the URL format below. This will return the header image of the user's profile.
@@ -59,7 +65,7 @@ https://blob.photo/bsky.app/banner
 [<img src="https://blob.photo/bsky.app/banner" height="96">](https://blob.photo/bsky.app/banner)
 
 ## Post Media
-To get the media of a post, use the URL format below. The `{blob_index}` is optional and can be used
+To get the media of a post, use the URL format below. The `{blob_index?}` is optional and can be used
 to specify which media blob to retrieve if there are multiple. If none is specified, the first blob
 will be returned.
 
@@ -68,11 +74,26 @@ https://blob.photo/{actor}/post/{post_id}/{blob_index?}
 
 Example:
 https://blob.photo/bsky.app/post/3lndjyecwcs2a
-https://blob.photo/bsky.app/post/3lmi3hmjsak24/1
+https://blob.photo/did:plc:z72i7hdynmk6r22z27h6tvur/post/3lmi3hmjsak24/1
 ```
 
 [<img src="https://blob.photo/bsky.app/post/3lndjyecwcs2a" height="96">](https://blob.photo/bsky.app/post/3lndjyecwcs2a)
-[<img src="https://blob.photo/bsky.app/post/3lmi3hmjsak24/1" height="96">](https://blob.photo/bsky.app/post/3lmi3hmjsak24/1)
+[<img src="https://blob.photo/did:plc:z72i7hdynmk6r22z27h6tvur/post/3lmi3hmjsak24/1" height="96">](https://blob.photo/did:plc:z72i7hdynmk6r22z27h6tvur/post/3lmi3hmjsak24/1)
+
+## Blobs
+To get a specific blob, use the URL format below. The `{cid}` is the CID of the blob you want
+to retrieve. Unfortunately, `@{format}` is not supported for blobs and will be ignored.
+
+```
+https://blob.photo/{actor}/blob/{cid}
+
+Example:
+https://blob.photo/bsky.app/blob/bafkreic5klrsqx3zmtv2rahuw3pdnohwgvgn44xas7h53ekg3bpkgbsnaq
+https://blob.photo/did:plc:z72i7hdynmk6r22z27h6tvur/blob/bafkreibti7g7jzet4nylzi5ojucw6eopj2kjqxgy53uy6yzk2uz377tw5u
+```
+
+[<img src="https://blob.photo/bsky.app/blob/bafkreic5klrsqx3zmtv2rahuw3pdnohwgvgn44xas7h53ekg3bpkgbsnaq" height="96">](https://blob.photo/bsky.app/blob/bafkreic5klrsqx3zmtv2rahuw3pdnohwgvgn44xas7h53ekg3bpkgbsnaq)
+[<img src="https://blob.photo/did:plc:z72i7hdynmk6r22z27h6tvur/blob/bafkreibti7g7jzet4nylzi5ojucw6eopj2kjqxgy53uy6yzk2uz377tw5u" height="96">](https://blob.photo/bsky.app/blob/bafkreibti7g7jzet4nylzi5ojucw6eopj2kjqxgy53uy6yzk2uz377tw5u)
 
 ## Formats
 If you desire to get a specific format of the image, you can append the format to the URL.
