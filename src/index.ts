@@ -15,7 +15,7 @@
  */
 
 const BSKY_PUBLIC_API = 'https://public.api.bsky.app/xrpc';
-const CACHE_TTL_HOUR = 3600;
+const CACHE_TTL_QUARTER_DAY = 21600;
 const CACHE_TTL_DAY = 86400;
 
 export default {
@@ -35,31 +35,46 @@ export default {
 
         // Route handling
         const [actor, section, contextualId, blobIndexStr] = segments;
-        const did = await resolveHandleToDID(env, actor);
+        const formattedActor = actor.replace(/@/, '').replace(/:sm$/, '');
+        const did = await resolveHandleToDID(env, formattedActor);
 
         if ( !did) {
-            return new Response('Unable to resolve DID from ' + actor, { status: 404 });
+            return new Response('Unable to resolve DID from ' + formattedActor, { status: 404 });
         }
 
+        // `{actor}` or `/{actor}:sm`
         if (segments.length === 1) {
-            return fetchAvatar(env, did, format);
+            const fullSize = !actor.endsWith(':sm');
+            return fetchAvatar(env, did, fullSize, format);
         }
 
+        // `/{actor}/avatar` or `/{actor}/avatar:sm`
+        if (segments.length === 2 && section.startsWith('avatar')) {
+            const fullSize = !section.endsWith(':sm');
+            return fetchAvatar(env, did, fullSize, format);
+        }
+
+        // `/{actor}/banner`
         if (segments.length === 2 && section === 'banner') {
             return fetchBanner(env, did, format);
         }
 
+        // `/{actor}/blob/{cid}`
         if (segments.length === 3 && section === 'blob') {
             return fetchBlob(env, did, contextualId);
         }
 
-        if (segments.length === 3 && section === 'post') {
-            return fetchPostMedia(env, did, contextualId, 0, format);
+        // `/{actor}/post/{postId}` or `/{actor}/post:sm/{postId}`
+        if (segments.length === 3 && section.startsWith('post')) {
+            const fullSize = !section.endsWith(':sm');
+            return fetchPostMedia(env, did, contextualId, 0, fullSize, format);
         }
 
-        if (segments.length === 4 && section === 'post') {
+        // `/{actor}/post/{postId}/{blobIndex}` or `/{actor}/post:sm/{postId}/{blobIndex}`
+        if (segments.length === 4 && section.startsWith('post')) {
+            const fullSize = !section.endsWith(':sm');
             const blobIndex = parseInt(blobIndexStr, 10);
-            return fetchPostMedia(env, did, contextualId, blobIndex, format);
+            return fetchPostMedia(env, did, contextualId, blobIndex, fullSize, format);
         }
 
         return new Response('Not Found', { status: 404 });
@@ -105,10 +120,13 @@ async function getPublicProfile(env: Env, did: string) {
 /* Fetch Functions
  * - - - - - - - - - - - - - */
 
-async function fetchAvatar(env: Env, did: string, format: string): Promise<Response> {
+async function fetchAvatar(env: Env, did: string, fullSize: boolean, format: string): Promise<Response> {
     const cached = await env.blob_photo.get(`avatar:${ did }`);
     if (cached) {
-        const url = cached.replace(/@[^/]+$/, `@${ format }`);
+        let url = cached.replace(/@[^/]+$/, `@${ format }`);
+        url = fullSize
+            ? url.replace(/\/avatar_thumbnail\//, '/avatar/')
+            : url.replace(/\/avatar\//, '/avatar_thumbnail/');
         return Response.redirect(url, 302);
     }
 
@@ -117,8 +135,9 @@ async function fetchAvatar(env: Env, did: string, format: string): Promise<Respo
         return new Response('Avatar not found for ' + did, { status: 404 });
     }
 
-    const url = profile.avatar.replace(/@[^/]+$/, `@${ format }`);
-    await env.blob_photo.put(`avatar:${ did }`, url, { expirationTtl: CACHE_TTL_HOUR });
+    let url = profile.avatar.replace(/@[^/]+$/, `@${ format }`);
+    url = fullSize ? url : url.replace(/\/avatar\//, '/avatar_thumbnail/');
+    await env.blob_photo.put(`avatar:${ did }`, url, { expirationTtl: CACHE_TTL_QUARTER_DAY });
     return Response.redirect(url, 302);
 }
 
@@ -135,7 +154,7 @@ async function fetchBanner(env: Env, did: string, format: string): Promise<Respo
     }
 
     const url = profile.banner.replace(/@[^/]+$/, `@${ format }`);
-    await env.blob_photo.put(`banner:${ did }`, url, { expirationTtl: CACHE_TTL_HOUR });
+    await env.blob_photo.put(`banner:${ did }`, url, { expirationTtl: CACHE_TTL_QUARTER_DAY });
     return Response.redirect(url, 302);
 }
 
@@ -144,12 +163,15 @@ async function fetchPostMedia(
     did: string,
     postId: string,
     blobIndex: number,
+    fullSize: boolean,
     format: string
 ): Promise<Response> {
     const cached = await env.blob_photo.get(`post:${ did }:${ postId }:${ blobIndex }`);
     if (cached) {
-
-        const url = cached.replace(/@[^/]+$/, `@${ format }`);
+        let url = cached.replace(/@[^/]+$/, `@${ format }`);
+        url = fullSize
+            ? url.replace(/\/feed_thumbnail\//, '/feed_fullsize/')
+            : url.replace(/\/feed_fullsize\//, '/feed_thumbnail/');
         return Response.redirect(url, 302);
     }
 
@@ -175,7 +197,8 @@ async function fetchPostMedia(
     }
 
     const cid = embed.images[blobIndex].image.ref['$link'];
-    const url = `https://cdn.bsky.app/img/feed_fullsize/plain/${ did }/${ cid }@${ format }`;
+    const size = fullSize ? 'feed_fullsize' : 'feed_thumbnail';
+    const url = `https://cdn.bsky.app/img/${ size }/plain/${ did }/${ cid }@${ format }`;
     await env.blob_photo.put(`post:${ did }:${ postId }:${ blobIndex }`, url, { expirationTtl: CACHE_TTL_DAY });
     return Response.redirect(url, 302);
 }
