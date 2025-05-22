@@ -9,6 +9,7 @@
  * - Banner: /{actor}/banner
  * - Post:   /{actor}/post/{postId} (defaults to first image)
  *           /{actor}/post/{postId}/{blobIndex}
+ * - Blob:   /{actor}/blob/{cid}
  *
  * Supports optional format suffixes: @jpeg, @png, @webp
  */
@@ -33,7 +34,7 @@ export default {
         }
 
         // Route handling
-        const [actor, section, postId, blobIndexStr] = segments;
+        const [actor, section, contextualId, blobIndexStr] = segments;
 
         if (segments.length === 1) {
             return fetchAvatar(env, actor, format);
@@ -43,13 +44,17 @@ export default {
             return fetchBanner(env, actor, format);
         }
 
+        if (segments.length === 3 && section === 'blob') {
+            return fetchBlob(env, actor, contextualId);
+        }
+
         if (segments.length === 3 && section === 'post') {
-            return fetchPostMedia(env, actor, postId, 0, format);
+            return fetchPostMedia(env, actor, contextualId, 0, format);
         }
 
         if (segments.length === 4 && section === 'post') {
             const blobIndex = parseInt(blobIndexStr, 10);
-            return fetchPostMedia(env, actor, postId, blobIndex, format);
+            return fetchPostMedia(env, actor, contextualId, blobIndex, format);
         }
 
         return new Response('Not Found', { status: 404 });
@@ -61,10 +66,10 @@ export default {
  * - - - - - - - - - - - - - */
 
 async function resolveHandleToDID(env: Env, actor: string): Promise<string | null> {
-    // if (actor.startsWith('did:plc:')) return actor;
-    //
-    // const cached = await env.blob_photo.get(`did:${ actor }`);
-    // if (cached) return cached;
+    if (actor.startsWith('did:plc:')) return actor;
+
+    const cached = await env.blob_photo.get(`did:${ actor }`);
+    if (cached) return cached;
 
     try {
         const res = await fetch(`${ BSKY_PUBLIC_API }/com.atproto.identity.resolveHandle?handle=${ actor }`);
@@ -169,5 +174,21 @@ async function fetchPostMedia(
     const cid = embed.images[blobIndex].image.ref['$link'];
     const url = `https://cdn.bsky.app/img/feed_fullsize/plain/${ did }/${ cid }@${ format }`;
     await env.blob_photo.put(`post:${actor}:${postId}:${blobIndex}`, url, { expirationTtl: CACHE_TTL_DAY });
+    return Response.redirect(url, 302);
+}
+
+async function fetchBlob(
+    env: Env,
+    actor: string,
+    cid: string
+): Promise<Response> {
+    const cached = await env.blob_photo.get(`blob:${ actor }:${ cid }`);
+    if (cached) return Response.redirect(cached, 302);
+
+    const did = await resolveHandleToDID(env, actor);
+    if ( !did) return new Response('User not found: ' + did, { status: 404 });
+
+    const url = `https://bsky.social/xrpc/com.atproto.sync.getBlob?did=${ did }&cid=${ cid }`;
+    await env.blob_photo.put(`blob:${ actor }:${ cid }`, url, { expirationTtl: CACHE_TTL_DAY });
     return Response.redirect(url, 302);
 }
