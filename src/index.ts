@@ -35,26 +35,31 @@ export default {
 
         // Route handling
         const [actor, section, contextualId, blobIndexStr] = segments;
+        const did = await resolveHandleToDID(env, actor);
+
+        if ( !did) {
+            return new Response('Unable to resolve DID from ' + actor, { status: 404 });
+        }
 
         if (segments.length === 1) {
-            return fetchAvatar(env, actor, format);
+            return fetchAvatar(env, did, format);
         }
 
         if (segments.length === 2 && section === 'banner') {
-            return fetchBanner(env, actor, format);
+            return fetchBanner(env, did, format);
         }
 
         if (segments.length === 3 && section === 'blob') {
-            return fetchBlob(env, actor, contextualId);
+            return fetchBlob(env, did, contextualId);
         }
 
         if (segments.length === 3 && section === 'post') {
-            return fetchPostMedia(env, actor, contextualId, 0, format);
+            return fetchPostMedia(env, did, contextualId, 0, format);
         }
 
         if (segments.length === 4 && section === 'post') {
             const blobIndex = parseInt(blobIndexStr, 10);
-            return fetchPostMedia(env, actor, contextualId, blobIndex, format);
+            return fetchPostMedia(env, did, contextualId, blobIndex, format);
         }
 
         return new Response('Not Found', { status: 404 });
@@ -75,16 +80,16 @@ async function resolveHandleToDID(env: Env, actor: string): Promise<string | nul
         const res = await fetch(`${ BSKY_PUBLIC_API }/com.atproto.identity.resolveHandle?handle=${ actor }`);
         if ( !res.ok) return null;
         const data = await res.json() as { did: string };
-        await env.blob_photo.put(`did:${actor}`, data.did, { expirationTtl: CACHE_TTL_DAY });
+        await env.blob_photo.put(`did:${ actor }`, data.did, { expirationTtl: CACHE_TTL_DAY });
         return data.did;
     } catch {
         return null;
     }
 }
 
-async function getPublicProfile(env: Env, actor: string) {
+async function getPublicProfile(env: Env, did: string) {
     try {
-        const res = await fetch(`${ BSKY_PUBLIC_API }/app.bsky.actor.getProfile?actor=${ actor }`);
+        const res = await fetch(`${ BSKY_PUBLIC_API }/app.bsky.actor.getProfile?actor=${ did }`);
         if ( !res.ok) return null;
         return await res.json() as {
             did: string;
@@ -100,59 +105,57 @@ async function getPublicProfile(env: Env, actor: string) {
 /* Fetch Functions
  * - - - - - - - - - - - - - */
 
-async function fetchAvatar(env: Env, actor: string, format: string): Promise<Response> {
-    const cached = await env.blob_photo.get(`avatar:${actor}`);
+async function fetchAvatar(env: Env, did: string, format: string): Promise<Response> {
+    const cached = await env.blob_photo.get(`avatar:${ did }`);
     if (cached) {
-        const url = cached.replace('@jpeg', `@${ format }`);
+        const url = cached.replace(/@[^/]+$/, `@${ format }`);
         return Response.redirect(url, 302);
     }
 
-    const profile = await getPublicProfile(env, actor);
+    const profile = await getPublicProfile(env, did);
     if ( !profile || !profile.avatar) {
-        return new Response('Avatar not found', { status: 404 });
+        return new Response('Avatar not found for ' + did, { status: 404 });
     }
 
-    const url = profile.avatar.replace('@jpeg', `@${ format }`);
-    await env.blob_photo.put(`avatar:${actor}`, url, { expirationTtl: CACHE_TTL_HOUR });
+    const url = profile.avatar.replace(/@[^/]+$/, `@${ format }`);
+    await env.blob_photo.put(`avatar:${ did }`, url, { expirationTtl: CACHE_TTL_HOUR });
     return Response.redirect(url, 302);
 }
 
-async function fetchBanner(env: Env, actor: string, format: string): Promise<Response> {
-    const cached = await env.blob_photo.get(`banner:${actor}`);
+async function fetchBanner(env: Env, did: string, format: string): Promise<Response> {
+    const cached = await env.blob_photo.get(`banner:${ did }`);
     if (cached) {
-        const url = cached.replace('@jpeg', `@${ format }`);
+        const url = cached.replace(/@[^/]+$/, `@${ format }`);
         return Response.redirect(url, 302);
     }
 
-    const profile = await getPublicProfile(env, actor);
+    const profile = await getPublicProfile(env, did);
     if ( !profile || !profile.banner) {
-        return new Response('Banner not found', { status: 404 });
+        return new Response('Banner not found for ' + did, { status: 404 });
     }
 
-    const url = profile.banner.replace('@jpeg', `@${ format }`);
-    await env.blob_photo.put(`banner:${actor}`, url, { expirationTtl: CACHE_TTL_HOUR });
+    const url = profile.banner.replace(/@[^/]+$/, `@${ format }`);
+    await env.blob_photo.put(`banner:${ did }`, url, { expirationTtl: CACHE_TTL_HOUR });
     return Response.redirect(url, 302);
 }
 
 async function fetchPostMedia(
     env: Env,
-    actor: string,
+    did: string,
     postId: string,
     blobIndex: number,
     format: string
 ): Promise<Response> {
-    const cached = await env.blob_photo.get(`post:${actor}:${postId}:${blobIndex}`);
+    const cached = await env.blob_photo.get(`post:${ did }:${ postId }:${ blobIndex }`);
     if (cached) {
-        const url = cached.replace('@jpeg', `@${ format }`);
+
+        const url = cached.replace(/@[^/]+$/, `@${ format }`);
         return Response.redirect(url, 302);
     }
 
-    const did = await resolveHandleToDID(env, actor);
-    if ( !did) return new Response('User not found: ' + did, { status: 404 });
-
     const postUri = `at://${ did }/app.bsky.feed.post/${ postId }`;
     const res = await fetch(`${ BSKY_PUBLIC_API }/app.bsky.feed.getPostThread?uri=${ postUri }`);
-    if ( !res.ok) return new Response('Post not found', { status: 404 });
+    if ( !res.ok) return new Response('Post ' + postId + ' not found for ' + did, { status: 404 });
 
     const data = await res.json() as {
         thread?: {
@@ -173,22 +176,19 @@ async function fetchPostMedia(
 
     const cid = embed.images[blobIndex].image.ref['$link'];
     const url = `https://cdn.bsky.app/img/feed_fullsize/plain/${ did }/${ cid }@${ format }`;
-    await env.blob_photo.put(`post:${actor}:${postId}:${blobIndex}`, url, { expirationTtl: CACHE_TTL_DAY });
+    await env.blob_photo.put(`post:${ did }:${ postId }:${ blobIndex }`, url, { expirationTtl: CACHE_TTL_DAY });
     return Response.redirect(url, 302);
 }
 
 async function fetchBlob(
     env: Env,
-    actor: string,
+    did: string,
     cid: string
 ): Promise<Response> {
-    const cached = await env.blob_photo.get(`blob:${ actor }:${ cid }`);
+    const cached = await env.blob_photo.get(`blob:${ did }:${ cid }`);
     if (cached) return Response.redirect(cached, 302);
 
-    const did = await resolveHandleToDID(env, actor);
-    if ( !did) return new Response('User not found: ' + did, { status: 404 });
-
     const url = `https://bsky.social/xrpc/com.atproto.sync.getBlob?did=${ did }&cid=${ cid }`;
-    await env.blob_photo.put(`blob:${ actor }:${ cid }`, url, { expirationTtl: CACHE_TTL_DAY });
+    await env.blob_photo.put(`blob:${ did }:${ cid }`, url, { expirationTtl: CACHE_TTL_DAY });
     return Response.redirect(url, 302);
 }
