@@ -1,6 +1,6 @@
 {
     "$schema": "node_modules/wrangler/config-schema.json",
-    "name": "blob-direct",
+    "name": "blobs_blue",
     "main": "src/index.ts",
     "compatibility_date": "2025-05-23",
     "observability": {
