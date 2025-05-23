@@ -1,15 +1,22 @@
 {
     "$schema": "node_modules/wrangler/config-schema.json",
-    "name": "blob-photo",
+    "name": "blob-direct",
     "main": "src/index.ts",
-    "compatibility_date": "2025-05-21",
+    "compatibility_date": "2025-05-23",
     "observability": {
         "enabled": true
     },
     "kv_namespaces": [
         {
-            "binding": "blob_photo",
-            "id": "4ec85a1f07e741659daa17ee017c96a5",
+            "binding": "blobs_blue",
+            "id": "935927775a7746608c00b6ed75b1d5e6"
         }
-    ]
+    ],
+    "vars": {
+        "REPO_URL": "https://github.com/federationstudio/blobs.blue",
+        "BSKY_PUBLIC_API": "https://public.api.bsky.app/xrpc",
+        "CACHE_TTL_QUARTER_DAY": 21600,
+        "CACHE_TTL_HALF_DAY": 43200,
+        "CACHE_TTL_DAY": 86400
+    }
 }

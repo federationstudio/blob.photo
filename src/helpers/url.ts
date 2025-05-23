@@ -1,29 +1,42 @@
-export function urlParser(urlString: string) {
+export function parseUrl(urlString: string) {
     const url = new URL(urlString);
     const rawPath = decodeURIComponent(url.pathname).replace(/^\/+/, '');
-    const formatMatch = rawPath.match(/@(\w+)$/);
-    const format = formatMatch ? formatMatch[1].toLowerCase() : 'jpeg';
-    const path = formatMatch ? rawPath.replace(/@(\w+)$/, '') : rawPath;
+
+    const [pathWithoutFormat, format = 'jpeg'] = rawPath.split('@');
+    const path = pathWithoutFormat;
     const segments = path.split('/');
 
     return {
         url,
-        format,
+        format: format.toLowerCase(),
         path,
-        segments
+        segments,
     };
 }
 
-export function pathSegmentParser(segments: string[]) {
-    const [actor, section, contextualId, blobIndexStr] = segments;
-    const formattedActor = actor.replace(/@/, '').replace(/:sm$/, '');
-    const blobIndex = blobIndexStr ? parseInt(blobIndexStr, 10) : undefined;
-
+export function parseBaseSegments([actor, section]: string[]) {
     return {
-        actor,
+        actor: actor.replace(/^@/, ''),
         section,
-        contextualId,
-        blobIndex,
-        formattedActor
+    };
+}
+
+export function parseBlobSegments([, , Cid,]: string[]) {
+    return {
+        Cid
+    };
+}
+
+export function parseImageSegments([, , imagePostId, blobIndexStr]: string[]) {
+    return {
+        imagePostId,
+        blobIndex: blobIndexStr ? parseInt(blobIndexStr, 10) : undefined,
+    };
+}
+
+export function parseVideoSegments([, , videoPostId, typeExpected]: string[]) {
+    return {
+        videoPostId,
+        typeExpected
     };
 }
