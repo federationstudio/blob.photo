@@ -21,14 +21,10 @@ import { blob } from './handlers/blob';
 export default {
     async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
         const url = new URL(request.url);
-        console.log('⚡ hostname:', url.hostname);
-        console.log('⚡ path:', url.pathname);
         const { format, segments } = parseUrl(request.url);
-        console.log('📦 segments:', segments);
 
         // Redirect root
         if (segments.length === 1 && !segments[0].trim()) {
-            console.log('✅ matched root');
             return Response.redirect(env.REPO_URL, 302);
         }
 

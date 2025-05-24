@@ -28,7 +28,7 @@ export const video = {
         const post = data.thread?.post;
         const embed = post?.embed;
 
-        if ( !embed || embed.$type !== 'app.bsky.embed.video' || !embed.cid) {
+        if ( !embed || embed.$type !== 'app.bsky.embed.video#view' || !embed.cid) {
             return new Response('Video not found', { status: 404 });
         }
 
