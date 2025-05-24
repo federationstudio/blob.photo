@@ -53,7 +53,7 @@ export const image = {
         return Response.redirect(url, 302);
     },
 
-    async fetchPostMedia(
+    async fetchPostImage(
         did: string,
         postId: string,
         blobIndex: number,

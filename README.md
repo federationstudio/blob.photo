@@ -10,17 +10,20 @@ Built by [@federation.studio](https://bsky.app/profile/federation.studio)
 ## Table of Contents
 
 <!-- TOC -->
+
 * [Blue Blobs](#blue-blobs)
-  * [Table of Contents](#table-of-contents)
+    * [Table of Contents](#table-of-contents)
 * [Usage](#usage)
-  * [Parameters](#parameters)
-  * [Avatar](#avatar)
-  * [Banners](#banners)
-  * [Post Media](#post-media)
-    * [Post Images](#post-images)
-    * [Post Video](#post-video)
-  * [Blobs](#blobs)
-  * [Formats](#formats)
+    * [Parameters](#parameters)
+    * [Avatar](#avatar)
+    * [Banners](#banners)
+    * [Post Media](#post-media)
+        * [Post Images](#post-images)
+        * [Post Video](#post-video)
+        * [Link Previews](#link-previews)
+    * [Blobs](#blobs)
+    * [Formats](#formats)
+
 <!-- TOC -->
 
 # Usage
@@ -30,8 +33,9 @@ There are three types of images that can be proxied:
 1. **Avatar**: The profile picture of a user.
 2. **Banners**: The header image of a user profile.
 3. **Post Media**:
-    1. **Post Images**: Images from a post.
-    2. **Post Videos**: Videos from a post.
+    1. **Images**: Images from a post.
+    2. **Videos**: Videos from a post.
+    3. **Link Previews**: Link preview image of a post.
 4. **Blobs**: Individual blobs uploaded to PDS.
 
 ## Parameters
@@ -70,7 +74,8 @@ full-size image is the default behavior. If you want a thumbnail, you should use
 
 ## Banners
 
-To get the banner of a user, use the URL format below. This will return the header image of the user's profile. Unfortunately,
+To get the banner of a user, use the URL format below. This will return the header image of the user's profile.
+Unfortunately,
 the thumbnail version is not supported for banners. (Blame Bluesky for that.)
 
 * **Full size**:
@@ -88,8 +93,8 @@ There are multiple endpoints to get post media.
 
 ### Post Images
 
-When it comes to post images, you can fetch the first image of a post or a specific image by its index. If you want to
-fetch the thumbnail, you can use the `/post-image-thumb` endpoint.
+When it comes to post images (images embed), you can fetch the first image of a post or a specific image by its index.
+If you want to fetch the thumbnail, you can use the `/post-image-thumb` endpoint.
 
 * **Full size**:
     * `https://blobs.blue/{actor}/post-image/{postId}`
@@ -111,8 +116,8 @@ fetch the thumbnail, you can use the `/post-image-thumb` endpoint.
 
 ### Post Video
 
-When it comes to a post video, with the current (Bluesky) schema, only one video is supported per post. But has
-additional features, like fetching the raw video blob, video thumbnail, and video playlist/cue (m3u8).
+When it comes to a post video (video embed), with the current (Bluesky) schema, only one video is supported per post.
+But has additional features, like fetching the raw video blob, video thumbnail, and video playlist/cue (m3u8).
 
 * **Raw blob**:
     * `https://blobs.blue/{actor}/post-video/{postId}`
@@ -132,7 +137,25 @@ additional features, like fetching the raw video blob, video thumbnail, and vide
 [Raw Video Blob](https://blobs.blue/blob.is.helpful.fyi/post-video/3lpupt4ybwc2u)<br>
 [Video Playlist](https://blobs.blue/blob.is.helpful.fyi/post-video/3lpupt4ybwc2u/playlist)
 
+### Link Previews
+
+If a post contains a link preview (external embed), you can fetch the preview image using the following URL format.
+This is useful for getting the image of a link preview without having to parse the post content. If you want to
+fetch the thumbnail, you can use the `/post-link-thumb` endpoint.
+
+* **Full size**:
+    * `https://blobs.blue/{actor}/post-link/{postId}`
+* **Thumbnail**:
+    * `https://blobs.blue/{actor}/post-link-thumb/{postId}`
+* **Examples**:
+    * `https://blobs.blue/blob.is.helpful.fyi/post-link/3lpvefnnqxk2e`
+    * `https://blobs.blue/blob.is.helpful.fyi/post-link-thumb/3lpvefnnqxk2e`
+
+[<img src="https://blobs.blue/blob.is.helpful.fyi/post-link/3lpvefnnqxk2e" height="96">](https://blobs.blue/blob.is.helpful.fyi/post-link/3lpvefnnqxk2e)
+[<img src="https://blobs.blue/blob.is.helpful.fyi/post-link-thumb/3lpvefnnqxk2e" height="48">](https://blobs.blue/blob.is.helpful.fyi/post-link-thumb/3lpvefnnqxk2e)
+
 ## Blobs
+
 If you want to access the raw blob, you can use the following URL format. Sometimes you need to access the raw blob for
 deeper integration outside the Bluesky schema. This is useful for developers who want to build custom apps or tools.
 

@@ -48,6 +48,12 @@ export async function getPublicPost(env: Env, did: string, postId: string) {
                             thumb: string,
                             fullsize: string,
                         }[];
+                        external?: {
+                            uri: string;
+                            title?: string;
+                            description?: string;
+                            thumb?: string;
+                        }
                     };
                 };
             }

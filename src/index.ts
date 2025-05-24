@@ -14,9 +14,17 @@
  */
 import { image } from './handlers/image';
 import { video } from './handlers/video';
-import { parseBaseSegments, parseBlobSegments, parseImageSegments, parseUrl, parseVideoSegments } from './helpers/url';
+import {
+    parseBaseSegments,
+    parseBlobSegments,
+    parseLinkSegments,
+    parseImageSegments,
+    parseUrl,
+    parseVideoSegments
+} from './helpers/url';
 import { resolveHandleToDID } from './helpers/at-proto';
 import { blob } from './handlers/blob';
+import { link } from './handlers/link';
 
 export default {
     async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -65,11 +73,11 @@ export default {
                 const { imagePostId, blobIndex } = parseImageSegments(segments);
 
                 if (segments.length === 3) {
-                    return image.fetchPostMedia(did, imagePostId, 0, fullSize, format);
+                    return image.fetchPostImage(did, imagePostId, 0, fullSize, format);
                 }
 
                 if (segments.length === 4) {
-                    return image.fetchPostMedia(did, imagePostId, blobIndex || 0, fullSize, format);
+                    return image.fetchPostImage(did, imagePostId, blobIndex || 0, fullSize, format);
                 }
                 break;
 
@@ -78,16 +86,26 @@ export default {
                 const { videoPostId, typeExpected } = parseVideoSegments(segments);
 
                 if (segments.length === 3) {
-                    return video.fetchPostMedia(did, videoPostId);
+                    return video.fetchPostVideo(did, videoPostId);
                 }
 
                 if (segments.length === 4) {
                     if (typeExpected === 'thumb') {
-                        return video.fetchThumbnail(did, videoPostId);
+                        return video.fetchPostThumbnail(did, videoPostId);
                     }
                     if (typeExpected === 'playlist') {
-                        return video.fetchPlaylist(did, videoPostId);
+                        return video.fetchPostPlaylist(did, videoPostId);
                     }
+                }
+                break;
+
+            case 'post-link':
+            case 'post-link-thumb':
+                link.init(request, env, ctx);
+                const { externalPostId } = parseLinkSegments(segments);
+
+                if (segments.length === 3) {
+                    return link.fetchPostLink(did, externalPostId, fullSize);
                 }
                 break;
 
