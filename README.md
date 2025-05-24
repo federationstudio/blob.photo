@@ -124,8 +124,13 @@ additional features, like fetching the raw video blob, video thumbnail, and vide
     * `https://blobs.blue/blob.is.helpful.fyi/post-video/3lpupt4ybwc2u/thumb`
     * `https://blobs.blue/blob.is.helpful.fyi/post-video/3lpupt4ybwc2u/playlist`
 
-[<img src="https://blobs.blue/blob.is.helpful.fyi/post-video/3lpupt4ybwc2u/thumb" height="96">](https://blobs.blue/blob.is.helpful.fyi/post-video/3lpupt4ybwc2u/thumb)
-<video autoplay loop playsinline disablepictureinpicture controls height="96" src="https://blobs.blue/blob.is.helpful.fyi/post-video/3lpupt4ybwc2u/playlist" type="video/mp4"></video>
+> [!NOTE]
+> We're unable to display a video preview on GitHub. Please check the link below to see the video thumbnail,
+> raw video blob, and playlist.
+
+[<img src="https://blobs.blue/blob.is.helpful.fyi/post-video/3lpupt4ybwc2u/thumb" height="96">](https://blobs.blue/blob.is.helpful.fyi/post-video/3lpupt4ybwc2u/thumb)<br>
+[Raw Video Blob](https://blobs.blue/blob.is.helpful.fyi/post-video/3lpupt4ybwc2u)<br>
+[Video Playlist](https://blobs.blue/blob.is.helpful.fyi/post-video/3lpupt4ybwc2u/playlist)
 
 ## Blobs
 If you want to access the raw blob, you can use the following URL format. Sometimes you need to access the raw blob for
