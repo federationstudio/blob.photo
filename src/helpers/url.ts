@@ -40,3 +40,9 @@ export function parseVideoSegments([, , videoPostId, typeExpected]: string[]) {
         typeExpected
     };
 }
+
+export function parseLinkSegments([, , externalPostId, ]: string[]) {
+    return {
+        externalPostId
+    };
+}

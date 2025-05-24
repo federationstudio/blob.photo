@@ -14,9 +14,17 @@
  */
 import { image } from './handlers/image';
 import { video } from './handlers/video';
-import { parseBaseSegments, parseBlobSegments, parseImageSegments, parseUrl, parseVideoSegments } from './helpers/url';
+import {
+    parseBaseSegments,
+    parseBlobSegments,
+    parseLinkSegments,
+    parseImageSegments,
+    parseUrl,
+    parseVideoSegments
+} from './helpers/url';
 import { resolveHandleToDID } from './helpers/at-proto';
 import { blob } from './handlers/blob';
+import { link } from './handlers/link';
 
 export default {
     async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -88,6 +96,16 @@ export default {
                     if (typeExpected === 'playlist') {
                         return video.fetchPostPlaylist(did, videoPostId);
                     }
+                }
+                break;
+
+            case 'post-link':
+            case 'post-link-thumb':
+                link.init(request, env, ctx);
+                const { externalPostId } = parseLinkSegments(segments);
+
+                if (segments.length === 3) {
+                    return link.fetchPostLink(did, externalPostId, fullSize);
                 }
                 break;
 

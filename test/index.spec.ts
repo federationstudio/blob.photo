@@ -5,6 +5,7 @@ import worker from '../src/index';
 const testActor: string = 'did:plc:67pv3ct6h7yi5dqfd2uuxft2';
 const testImagePostId: string = '3lpupqthpp22u';
 const testVideoPostId: string = '3lpupt4ybwc2u';
+const testLinkPostId: string = '3lpvefnnqxk2e';
 const testBlobCid: string = 'bafkreifhaamh3y3juxgjowfor4kkzu6o37b3gqv5budpexxgjyjr5r222u';
 const IncomingRequest = Request<unknown, IncomingRequestCfProperties>;
 
@@ -126,6 +127,18 @@ describe('blobs.blue', () => {
         const response = await handleRequest(`/${ testActor }/post-video/${ testVideoPostId }/playlist`);
         expect(response.status).toBe(302);
         expect(response.headers.get('Location')).toBe('https://video.bsky.app/watch/did:plc:67pv3ct6h7yi5dqfd2uuxft2/bafkreicrjif5q2hpvvx3jlab4bijiwmr5om6zsoh4mcng2dl7yv4scdxsm/playlist.m3u8');
+    });
+
+    it('/{actor}/post-link/{postId} : redirects to post link preview', async () => {
+        const response = await handleRequest(`/${ testActor }/post-link/${ testLinkPostId }`);
+        expect(response.status).toBe(302);
+        expect(response.headers.get('Location')).toBe('https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:67pv3ct6h7yi5dqfd2uuxft2/bafkreidiskrm2dqzlsdudoqi7w3jpoakohbkdg6izgklulpqgsrr632jgq@jpeg');
+    });
+
+    it('/{actor}/post-link-thumb/{postId} : redirects to small post link preview', async () => {
+        const response = await handleRequest(`/${ testActor }/post-link-thumb/${ testLinkPostId }`);
+        expect(response.status).toBe(302);
+        expect(response.headers.get('Location')).toBe('https://cdn.bsky.app/img/feed_thumbnail/plain/did:plc:67pv3ct6h7yi5dqfd2uuxft2/bafkreidiskrm2dqzlsdudoqi7w3jpoakohbkdg6izgklulpqgsrr632jgq@jpeg');
     });
 
     it('/{actor}/blob/{cid} : redirects to raw blob', async () => {
