@@ -65,11 +65,11 @@ export default {
                 const { imagePostId, blobIndex } = parseImageSegments(segments);
 
                 if (segments.length === 3) {
-                    return image.fetchPostMedia(did, imagePostId, 0, fullSize, format);
+                    return image.fetchPostImage(did, imagePostId, 0, fullSize, format);
                 }
 
                 if (segments.length === 4) {
-                    return image.fetchPostMedia(did, imagePostId, blobIndex || 0, fullSize, format);
+                    return image.fetchPostImage(did, imagePostId, blobIndex || 0, fullSize, format);
                 }
                 break;
 
@@ -78,15 +78,15 @@ export default {
                 const { videoPostId, typeExpected } = parseVideoSegments(segments);
 
                 if (segments.length === 3) {
-                    return video.fetchPostMedia(did, videoPostId);
+                    return video.fetchPostVideo(did, videoPostId);
                 }
 
                 if (segments.length === 4) {
                     if (typeExpected === 'thumb') {
-                        return video.fetchThumbnail(did, videoPostId);
+                        return video.fetchPostThumbnail(did, videoPostId);
                     }
                     if (typeExpected === 'playlist') {
-                        return video.fetchPlaylist(did, videoPostId);
+                        return video.fetchPostPlaylist(did, videoPostId);
                     }
                 }
                 break;

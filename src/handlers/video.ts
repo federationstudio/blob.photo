@@ -14,7 +14,7 @@ export const video = {
     /* Fetch Functions
      * - - - - - - - - - - - - - */
 
-    async fetchPostMedia(
+    async fetchPostVideo(
         did: string,
         postId: string
     ): Promise<Response> {
@@ -38,7 +38,7 @@ export const video = {
         return Response.redirect(url, 302);
     },
 
-    async fetchPlaylist(
+    async fetchPostPlaylist(
         did: string,
         postId: string
     ): Promise<Response> {
@@ -56,12 +56,12 @@ export const video = {
             return new Response('Video not found', { status: 404 });
         }
 
-        await this.env!.blobs_blue.put(`playlist:${ did }:${ postId }`, embed.playlist, { expirationTtl: this.env!.CACHE_TTL_DAY });
+        await this.env!.blobs_blue.put(`playlist:${ did }:${ postId }`, embed.playlist.replace(/%3A/g, ':'), { expirationTtl: this.env!.CACHE_TTL_DAY });
 
-        return Response.redirect(embed.playlist, 302);
+        return Response.redirect(embed.playlist.replace(/%3A/g, ':'), 302);
     },
 
-    async fetchThumbnail(
+    async fetchPostThumbnail(
         did: string,
         postId: string
     ): Promise<Response> {
@@ -79,8 +79,8 @@ export const video = {
             return new Response('Video not found', { status: 404 });
         }
 
-        await this.env!.blobs_blue.put(`video_thumbnail:${ did }:${ postId }`, embed.thumbnail, { expirationTtl: this.env!.CACHE_TTL_DAY });
+        await this.env!.blobs_blue.put(`video_thumbnail:${ did }:${ postId }`, embed.thumbnail.replace(/%3A/g, ':'), { expirationTtl: this.env!.CACHE_TTL_DAY });
 
-        return Response.redirect(embed.thumbnail, 302);
+        return Response.redirect(embed.thumbnail.replace(/%3A/g, ':'), 302);
     }
 };
